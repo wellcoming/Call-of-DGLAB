@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "codm-with-dglab"
+version = "0.1.0"
+description = ""
+authors = ["wellcoming <kangming06@hotmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+dearpygui = "^2.0.0"
+pywin32 = "^310"
+pyglet = "^2.1.3"
+pydglab-ws = "^1.1.0"
+qrcode = "^8.1"
+pillow = "^11.1.0"
+opencv-python = "^4.11.0.86"
+mss = "^10.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
