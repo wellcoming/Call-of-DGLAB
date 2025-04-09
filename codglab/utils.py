@@ -10,6 +10,7 @@ import qrcode
 
 ROOT_PATH = Path(__file__).resolve().parent.parent
 RESOURCE_PATH = ROOT_PATH / "resource"
+CONFIG_PATH = ROOT_PATH / "config.json"
 
 
 def get_local_ip():
@@ -77,4 +78,5 @@ def generate_qrcode(text, size=300):
         ])
 
     return data
+
 

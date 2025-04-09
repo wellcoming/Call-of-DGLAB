@@ -3,8 +3,10 @@ from asyncio import Future
 
 import dearpygui.dearpygui as dpg
 from pydglab_ws.enums import RetCode
-from codglab.dglab import DGLabController
-from codglab.utils import RESOURCE_PATH, get_local_ip, get_loop, generate_qrcode
+
+from ..config import load_config, save_config
+from ..dglab import DGLabController
+from ..utils import RESOURCE_PATH, get_local_ip, get_loop, generate_qrcode, ROOT_PATH
 
 
 def _update_qrcode():
@@ -71,13 +73,20 @@ def _server_switch_callback(sender="server_switch", app_data=False):
             DGLabController.INSTANCE.start("0.0.0.0", dpg.get_value("port")), get_loop())
         future.add_done_callback(_on_server_started)
 
+
 def on_test():
-    loop=get_loop()
+    loop = get_loop()
     for i in range(1000):
         asyncio.run_coroutine_threadsafe(
             DGLabController.INSTANCE.trigger_death(),
             loop
         )
+
+
+def stop_server():
+    dpg.set_value("server_switch", False)
+    _server_switch_callback()
+
 
 def setup():
     with dpg.window(tag="main_window"):
@@ -99,7 +108,7 @@ def setup():
                 scientific=True,
                 default_value=get_local_ip(),
                 hint="ip/domain",
-                callback=lambda: (dpg.set_value("server_switch", False), _server_switch_callback())
+                callback=stop_server
             )
             dpg.add_input_int(
                 tag="port",
@@ -109,7 +118,7 @@ def setup():
                 max_value=65535,
                 default_value=5678,
                 step=0, step_fast=0,
-                callback=lambda: (dpg.set_value("server_switch", False), _server_switch_callback())
+                callback=stop_server
             )
 
         dpg.add_separator()
@@ -138,25 +147,34 @@ def setup():
                 dpg.add_text("Dead:")
                 dpg.add_text("False", color=(255, 0, 0))
 
-            dpg.add_button(label="Don't touch!", tag="test_button",callback=on_test)
+            dpg.add_button(label="Don't touch!", tag="test_button", callback=on_test)
 
         dpg.add_separator()
 
         with dpg.tree_node(label="Config", default_open=True):
-            dpg.add_slider_intx(label="(A/B) Min Strength", tag="min_strength", max_value=200, size=2,
-                                default_value=[40, 40])
-            dpg.add_slider_doublex(label="(A/B) Decrease cooldown", tag="decrease_cooldown", max_value=60, size=2,
-                                   default_value=[5, 5])
-            dpg.add_slider_doublex(label="(A/B) Decrease Speed", tag="decrease_speed", max_value=10, size=2,
-                                   default_value=[1, 1])
-            dpg.add_slider_doublex(label="(A/B) Hurt Penalty", tag="hurt_penalty", max_value=100, size=2,
-                                   default_value=[20, 20])
-            dpg.add_slider_doublex(label="(A/B) Death Penalty", tag="death_penalty", max_value=100, size=2,
-                                   default_value=[20, 20])
-            dpg.add_slider_doublex(label="(A/B) Hurt Speed", tag="hurt_speed", max_value=1, size=2,
-                                   default_value=[0.2, 0.2])
+            with dpg.group(tag="config_container"):
+                dpg.add_slider_intx(label="(A/B) Min Strength", tag="min_strength", max_value=200, size=2,
+                                    default_value=[40, 40])
+                dpg.add_slider_doublex(label="(A/B) Decrease cooldown", tag="decrease_cooldown", max_value=60, size=2,
+                                       default_value=[5, 5])
+                dpg.add_slider_doublex(label="(A/B) Decrease Speed", tag="decrease_speed", max_value=10, size=2,
+                                       default_value=[1, 1])
+                dpg.add_slider_doublex(label="(A/B) Hurt Penalty", tag="hurt_penalty", max_value=100, size=2,
+                                       default_value=[20, 20])
+                dpg.add_slider_doublex(label="(A/B) Death Penalty", tag="death_penalty", max_value=100, size=2,
+                                       default_value=[20, 20])
+                dpg.add_slider_doublex(label="(A/B) Hurt Speed", tag="hurt_speed", max_value=1, size=2,
+                                       default_value=[0.2, 0.2])
+            dpg.add_spacer(height=10)
+            with dpg.group(horizontal=True):
+                dpg.add_button(label=" Save Config ", callback=lambda: save_config())
+                dpg.add_button(label=" Load Config ", callback=lambda: load_config())
 
     _server_switch_callback()
+    try:
+        load_config()
+    except FileNotFoundError:
+        save_config()
     # ???
 
 

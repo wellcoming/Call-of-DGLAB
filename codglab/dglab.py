@@ -69,6 +69,8 @@ class DGLabController:
                 case RetCode.CLIENT_DISCONNECTED:
                     print("设备断开")
                     await self.stop()
+                    from codglab.ui.main_window import stop_server
+                    stop_server()
                     # await self.client.rebind()
                 case msg if isinstance(msg, StrengthData):
                     self.max_strength[0] = msg.a_limit
@@ -124,7 +126,8 @@ class DGLabController:
                 asyncio.create_task(self.client.add_pulses(Channel(i + 1), get_hurt_pulse(self.cur[i])))
 
             # UI
-            dpg.configure_item("channel_" + "ab"[i], default_value=real / self.max_strength[i] if self.max_strength[i]!=0 else 0,
+            dpg.configure_item("channel_" + "ab"[i],
+                               default_value=real / self.max_strength[i] if self.max_strength[i] != 0 else 0,
                                overlay=f"{float(real):.2}/{self.max_strength[i]}")
 
         self.last_update = time.time()
