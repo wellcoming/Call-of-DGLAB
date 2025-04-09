@@ -4,15 +4,16 @@ import mss
 import numpy as np
 import cv2
 import dearpygui.dearpygui as dpg
-
+from PIL import Image
 from codglab.dglab import DGLabController
 
-HEALTH_BAR_REGION = {'left': 40, 'top': 1381, 'width': 489, 'height': 14}
+# HEALTH_BAR_REGION = {'left': 40, 'top': 1381, 'width': 489, 'height': 14}
+HEALTH_BAR_REGION = {'left': 29, 'top': 1036, 'width': 368, 'height': 9}
 FILLED_COLOR_BGR = np.array([206, 203, 206], dtype=np.uint8)
-COLOR_TOLERANCE = 5
+COLOR_TOLERANCE = 0
 LOWER_COLOR = np.clip(FILLED_COLOR_BGR - COLOR_TOLERANCE, 0, 255).astype(np.uint8)
 UPPER_COLOR = np.clip(FILLED_COLOR_BGR + COLOR_TOLERANCE, 0, 255).astype(np.uint8)
-COLUMN_FILL_THRESHOLD = 0.5
+COLUMN_FILL_THRESHOLD = 0.9
 
 
 def qshow(img, title="Quick View"):
@@ -46,7 +47,7 @@ async def detect_loop():
             h = get_health(img_array)
             dpg.configure_item("health_bar", default_value=h, overlay=f"{h:.2%}")
 
-            if abs(health - h) > 0.01:
+            if abs(health - h) > 0.05:
                 await DGLabController.INSTANCE.trigger_hurt(health - h)
                 health = h
 
@@ -58,4 +59,21 @@ async def detect_loop():
                 dead = True
 
             await DGLabController.INSTANCE.update()
-            await asyncio.sleep(max(0.09 - time.time() + t, 0))
+            await asyncio.sleep(max(0.1 - time.time() + t, 0))
+
+if __name__=="__main__":
+    # with mss.mss() as sct:
+    #     time.sleep(5)
+    #     sct_img = sct.grab(HEALTH_BAR_REGION)
+    #     img_array = np.frombuffer(sct_img.rgb, dtype=np.uint8).reshape((sct_img.height, sct_img.width, 3))
+    #     print(get_health(img_array))
+    img=Image.open(r"C:\Users\coming\Desktop\11114123423.png")
+    box = (
+        HEALTH_BAR_REGION['left'],
+        HEALTH_BAR_REGION['top'],
+        HEALTH_BAR_REGION['left'] + HEALTH_BAR_REGION['width'],  # right = left + width
+        HEALTH_BAR_REGION['top'] + HEALTH_BAR_REGION['height']  # lower = top + height
+    )
+    cropped_image = img.crop(box)
+    cropped_image.save("health_bar_cropped.png")
+

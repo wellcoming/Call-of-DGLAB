@@ -23,7 +23,7 @@ class DGLabController:
         self.last_hurt = -1
         self.dead = False
 
-        self.max_strength = [200, 200]
+        self.max_strength = [40, 40]
 
     async def start(self, host: str = "0.0.0.0", port: int = 5678):
         """显式启动服务器"""
@@ -38,7 +38,7 @@ class DGLabController:
 
         # 创建客户端
         self.client = self.server.new_local_client()
-        # asyncio.create_task(self.message_handler())
+        asyncio.create_task(self.message_handler())
 
     async def stop(self):
         """显式停止服务器"""
@@ -68,6 +68,7 @@ class DGLabController:
             match msg:
                 case RetCode.CLIENT_DISCONNECTED:
                     print("设备断开")
+                    await self.stop()
                     # await self.client.rebind()
                 case msg if isinstance(msg, StrengthData):
                     self.max_strength[0] = msg.a_limit
