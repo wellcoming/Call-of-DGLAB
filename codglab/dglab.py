@@ -86,6 +86,7 @@ class DGLabController:
     async def trigger_hurt(self, h):
         print(f"Hurt:{h}")
         if h <= 0: return
+        h = float(h)
         self.last_hurt = time.time()
         self.cur = [1, 1]
         self.base[0] += h * dpg.get_value("hurt_penalty")[0]
@@ -99,10 +100,6 @@ class DGLabController:
         self.base[1] += dpg.get_value("death_penalty")[1]
 
     async def update(self):
-        if not self.client:
-            return
-        else:
-            await self.client.ensure_bind()
         t = time.time()
         dt = t - self.last_update
 
@@ -117,7 +114,7 @@ class DGLabController:
             self.cur[i] = max(self.cur[i] - dt * dpg.get_value("hurt_speed")[i], 0)
             real = min(self.cur[i] * self.base[i], self.max_strength[i])
 
-            print(f"update base{self.base} cur{self.cur} real{real}")
+            # print(f"update base{self.base} cur{self.cur} real{real}")
 
             if self.cur[i] > 0:
                 asyncio.create_task(
@@ -128,6 +125,6 @@ class DGLabController:
             # UI
             dpg.configure_item("channel_" + "ab"[i],
                                default_value=real / self.max_strength[i] if self.max_strength[i] != 0 else 0,
-                               overlay=f"{float(real):.2}/{self.max_strength[i]}")
+                               overlay=f"{self.base[i]:.2f}/{self.max_strength[i]}")
 
         self.last_update = time.time()

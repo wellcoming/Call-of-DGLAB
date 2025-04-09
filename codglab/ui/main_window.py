@@ -24,6 +24,7 @@ def _on_app_connected(task):
         get_loop().create_task(DGLabController.INSTANCE.client.bind()).add_done_callback(_on_app_connected)
         return
     print("connected")
+    get_loop().create_task(DGLabController.INSTANCE.message_handler())
     dpg.configure_item("binding_group", show=False)
     dpg.configure_item("control_group", show=True)
     dpg.configure_item(
@@ -153,6 +154,9 @@ def setup():
 
         with dpg.tree_node(label="Config", default_open=True):
             with dpg.group(tag="config_container"):
+                dpg.add_checkbox(label="On Top", tag="on_top",
+                                 callback=lambda sender, data: dpg.set_viewport_always_top(data))
+                dpg.add_radio_button(items=("1080p", "1440p"), tag="resolution", horizontal=True)
                 dpg.add_slider_intx(label="(A/B) Min Strength", tag="min_strength", max_value=200, size=2,
                                     default_value=[40, 40])
                 dpg.add_slider_doublex(label="(A/B) Decrease cooldown", tag="decrease_cooldown", max_value=60, size=2,
